@@ -1,0 +1,12 @@
+com\votewise\Main$RegisterInitHandler.class
+com\votewise\Main$VoteCheckHandler.class
+com\votewise\Main$LoginHandler.class
+com\votewise\Main$CaptchaHandler.class
+com\votewise\util\SecurityUtil.class
+com\votewise\Main$RegisterVerifyHandler.class
+com\votewise\Main$CandidatesHandler.class
+com\votewise\Main.class
+com\votewise\DatabaseHelper.class
+com\votewise\Main$ResultsHandler.class
+com\votewise\Main$VoteHandler.class
+com\votewise\util\SecurityUtil$1.class

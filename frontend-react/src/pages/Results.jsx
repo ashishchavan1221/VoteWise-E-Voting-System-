@@ -13,60 +13,63 @@ function Results() {
     const navigate = useNavigate();
     const currentUser = localStorage.getItem('currentUser');
 
-    const candidatesBase = [
-        { id: 1, name: "Arun Sharma", party: "Party A", symbol: "🟢", color: "#3B82F6" },
-        { id: 2, name: "Priya Desai", party: "Party B", symbol: "🟠", color: "#10B981" },
-        { id: 3, name: "Rahul Singh", party: "Party C", symbol: "🔵", color: "#F59E0B" }
+    const chartColors = [
+        "#3B82F6", "#10B981", "#F59E0B", "#EF4444", "#8B5CF6", 
+        "#EC4899", "#14B8A6", "#F97316", "#06B6D4", "#6366F1"
     ];
 
     useEffect(() => {
         // Security Check
         if (!currentUser) {
-            window.showAlert('❌ Please login to view secure results.', 'error');
+            alert('❌ Please login to view secure results.');
             navigate('/login');
             return;
         }
 
-        const fetchResults = () => {
-             /* ====================================================
-               BACKEND TEAM INSTRUCTIONS: 
-               Implement a GET endpoint at /api/election/results
-               ==================================================== */
-            
-            // Mock Fetching
-            const mockResults = JSON.parse(localStorage.getItem("mock_results") || "{}");
-            
-            const stats = candidatesBase.map(c => ({
-                ...c,
-                votes: mockResults[c.id] || 0
-            }));
+        const fetchResults = async () => {
+            try {
+                const API_BASE = import.meta.env.VITE_API_URL || "";
+                const candRes = await fetch(`${API_BASE}/api/candidates`);
+                let stats = await candRes.json();
+                
+                // Sort by highest votes
+                stats.sort((a, b) => b.votes - a.votes);
 
-            setCandidateStats(stats);
+                // Assign colors dynamically for chart matching
+                stats = stats.map((c, index) => ({
+                    ...c,
+                    color: chartColors[index % chartColors.length]
+                }));
 
-            const labels = stats.map(c => c.name);
-            const dataCounts = stats.map(c => c.votes);
-            const bgColors = stats.map(c => c.color);
+                setCandidateStats(stats);
 
-            setTotalVotes(dataCounts.reduce((a, b) => a + b, 0));
+                const labels = stats.map(c => c.name);
+                const dataCounts = stats.map(c => c.votes);
+                const bgColors = stats.map(c => c.color);
 
-            setChartData({
-                labels,
-                datasets: [
-                    {
-                        label: 'Total Votes Verified',
-                        data: dataCounts,
-                        backgroundColor: bgColors,
-                        borderRadius: 8,
-                        borderWidth: 0,
-                        barThickness: 'flex',
-                        maxBarThickness: 60
-                    }
-                ]
-            });
+                setTotalVotes(dataCounts.reduce((a, b) => a + b, 0));
+
+                setChartData({
+                    labels,
+                    datasets: [
+                        {
+                            label: 'Total Votes Verified',
+                            data: dataCounts,
+                            backgroundColor: bgColors,
+                            borderRadius: 8,
+                            borderWidth: 0,
+                            barThickness: 'flex',
+                            maxBarThickness: 60
+                        }
+                    ]
+                });
+            } catch(e) {
+                console.error("Error fetching live results");
+            }
         };
 
         fetchResults();
-        const interval = setInterval(fetchResults, 3000); // Polling simulation
+        const interval = setInterval(fetchResults, 3000); // Live poll every 3s
         return () => clearInterval(interval);
     }, [currentUser, navigate]);
 
@@ -91,13 +94,13 @@ function Results() {
         animation: { duration: 1000, easing: 'easeOutQuart' }
     };
 
-    if (!currentUser) return null; // Prevent rendering while deciding to redirect
+    if (!currentUser) return null;
 
     return (
         <div className="bg-gray-50 min-h-[90vh] py-16">
             <div className="max-w-7xl mx-auto px-6">
                 <div className="text-center max-w-2xl mx-auto mb-16">
-                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-red-100 text-red-600 rounded-full font-semibold text-sm mb-4 animate-[fadeInScale_0.5s_ease-out]">
+                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-red-100 text-red-600 rounded-full font-semibold text-sm mb-4">
                         <span className="w-2.5 h-2.5 rounded-full bg-red-600 animate-pulse"></span>
                         <span>Live Data securely viewed by {currentUser}</span>
                     </div>
@@ -106,7 +109,7 @@ function Results() {
                 </div>
 
                 <div className="grid md:grid-cols-3 gap-8 mb-12">
-                    <div className="bg-white p-8 rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100 flex items-center gap-6 transform hover:-translate-y-1 transition duration-300">
+                    <div className="bg-white p-8 rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100 flex items-center gap-6">
                         <div className="w-20 h-20 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-3xl shadow-inner"><i className="fa-solid fa-users"></i></div>
                         <div>
                             <p className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-1">Total Turnout</p>
@@ -114,7 +117,7 @@ function Results() {
                         </div>
                     </div>
                     
-                    <div className="bg-white p-8 rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100 flex items-center gap-6 transform hover:-translate-y-1 transition duration-300">
+                    <div className="bg-white p-8 rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100 flex items-center gap-6">
                         <div className="w-20 h-20 rounded-2xl bg-green-50 text-green-600 flex items-center justify-center text-3xl shadow-inner"><i className="fa-solid fa-shield-check"></i></div>
                         <div>
                             <p className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-1">Integrity Status</p>
@@ -122,7 +125,7 @@ function Results() {
                         </div>
                     </div>
 
-                    <div className="bg-white p-8 rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100 flex items-center gap-6 transform hover:-translate-y-1 transition duration-300">
+                    <div className="bg-white p-8 rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100 flex items-center gap-6">
                         <div className="w-20 h-20 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-3xl shadow-inner"><i className="fa-solid fa-clock-rotate-left"></i></div>
                         <div>
                             <p className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-1">Last Updated</p>
@@ -134,32 +137,31 @@ function Results() {
                 <div className="grid lg:grid-cols-3 gap-8">
                     <div className="lg:col-span-2 bg-white p-8 rounded-3xl shadow-2xl shadow-gray-200/40 border border-gray-100">
                         <h3 className="text-2xl font-bold text-gray-900 mb-8 flex items-center gap-3">
-                            <i className="fa-solid fa-chart-column text-blue-600"></i> Presidential Race Results
+                            <i className="fa-solid fa-chart-column text-blue-600"></i> Server Polled Results
                         </h3>
                         <div className="h-[400px]">
-                            {chartData ? <Bar data={chartData} options={options} /> : <p>Loading Data...</p>}
+                            {chartData ? <Bar data={chartData} options={options} /> : <p>Loading Data from Database...</p>}
                         </div>
                     </div>
 
-                    <div className="bg-white p-8 rounded-3xl shadow-2xl shadow-gray-200/40 border border-gray-100">
+                    <div className="bg-white p-8 rounded-3xl shadow-2xl shadow-gray-200/40 border border-gray-100 max-h-[500px] overflow-y-auto">
                         <h3 className="text-2xl font-bold text-gray-900 mb-8 flex items-center gap-3">
-                            <i className="fa-solid fa-clipboard-list text-blue-600"></i> Specific Counts
+                            <i className="fa-solid fa-clipboard-list text-blue-600"></i> Candidate Ledger
                         </h3>
-                        <div className="space-y-6">
+                        <div className="space-y-4">
                             {candidateStats.map((c, i) => (
-                                <div key={i} className="flex items-center justify-between p-4 rounded-2xl bg-gray-50 border border-gray-100 hover:shadow-md transition">
+                                <div key={i} className="flex items-center justify-between p-4 rounded-xl bg-gray-50 border border-gray-100">
                                     <div className="flex items-center gap-4">
                                         <div className="w-12 h-12 rounded-xl flex items-center justify-center text-xl shadow-sm bg-white" style={{ borderLeft: `4px solid ${c.color}` }}>
                                             {c.symbol}
                                         </div>
                                         <div>
-                                            <h4 className="font-bold text-gray-900">{c.name}</h4>
-                                            <p className="text-xs font-semibold text-gray-500">{c.party}</p>
+                                            <h4 className="font-bold text-gray-900 truncate max-w-[120px]" title={c.name}>{c.name}</h4>
+                                            <p className="text-xs font-semibold text-gray-500 truncate max-w-[120px]">{c.party_or_group}</p>
                                         </div>
                                     </div>
-                                    <div className="text-right">
-                                        <div className="text-2xl font-black" style={{ color: c.color }}>{c.votes}</div>
-                                        <div className="text-xs font-medium text-gray-400 uppercase">Votes</div>
+                                    <div className="text-right whitespace-nowrap">
+                                        <div className="text-xl font-black" style={{ color: c.color }}>{c.votes}</div>
                                     </div>
                                 </div>
                             ))}

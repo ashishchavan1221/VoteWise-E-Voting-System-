@@ -15,6 +15,7 @@
     "chart.js": "^4.5.1",
     "lucide-react": "^0.577.0",
     "mysql2": "^3.20.0",
+    "pip": "^0.0.1",
     "react": "^19.2.4",
     "react-chartjs-2": "^5.3.1",
     "react-dom": "^19.2.4",
