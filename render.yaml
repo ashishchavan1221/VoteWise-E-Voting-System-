@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: votewise-live
+    env: docker
+    plan: free
+    branch: main
+    envVars:
+      - key: MONGO_URI
+        value: mongodb+srv://ashishchavan:ashish1221@cluster0.ucix1wi.mongodb.net/?retryWrites=true&w=majority
+      - key: SMTP_EMAIL
+        sync: false
+      - key: SMTP_PASSWORD
+        sync: false
